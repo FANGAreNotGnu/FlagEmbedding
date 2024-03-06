@@ -59,7 +59,7 @@ python -m FlagEmbedding.baai_general_embedding.finetune.hn_mine \
 Then train:
 Use bge-m3 deepspeed?
 
-torchrun --nproc_per_node 8 \
+CUDA_VISIBLE_DEVICES=0,1,2,3,4,5 torchrun --nproc_per_node 6 \
 -m FlagEmbedding.BGE_M3.run \
 --output_dir /media/code/FlagEmbedding/outputs/lotte_science_dev_forum_minedHN_m3_20e \
 --model_name_or_path BAAI/bge-m3 \

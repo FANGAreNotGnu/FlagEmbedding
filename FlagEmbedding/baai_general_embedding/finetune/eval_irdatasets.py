@@ -37,7 +37,7 @@ class Args:
         metadata={'help': 'Max passage length.'}
     )
     batch_size: int = field(
-        default=1,
+        default=128,
         metadata={'help': 'Inference batch size.'}
     )
     index_factory: str = field(
@@ -61,9 +61,13 @@ class Args:
         default="embeddings.memmap",
         metadata={'help': 'Path to save embeddings.'}
     )
-    eval_data_file: str = field(
-        default="/media/data/flagfmt/lotte_science_test_forum.jsonl",
-        metadata={'help': 'Path to save embeddings.'}
+    eval_data_root: str = field(
+        default="/media/data/flagfmt/",
+        metadata={'help': 'Root to data.'}
+    )
+    eval_data_name: str = field(
+        default="lotte_science_test_forum",
+        metadata={'help': 'Name of data.'}
     )
 
 
@@ -189,10 +193,11 @@ def main():
     parser = HfArgumentParser([Args])
     args: Args = parser.parse_args_into_dataclasses()[0]
 
-    eval_dataset = load_dataset("json", data_files=args.eval_data_file)
+    eval_data_path = args.eval_data_root + args.eval_data_name + ".jsonl"
+    eval_data_corpus_path = args.eval_data_root + args.eval_data_name + "_corpus.jsonl"
 
-    eval_data = datasets.load_dataset("namespace-Pt/msmarco", split="dev")
-    corpus = datasets.load_dataset("namespace-Pt/msmarco-corpus", split="train")
+    eval_data = load_dataset("json", data_files=eval_data_path)['train']
+    corpus = load_dataset("json", data_files=eval_data_corpus_path)['train']
 
     model = FlagModel(
         args.encoder, 
@@ -239,3 +244,12 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+"""
+CUDA_VISIBLE_DEVICES=6,7 python -m FlagEmbedding.baai_general_embedding.finetune.eval_irdatasets \
+--encoder /media/code/FlagEmbedding/outputs/lotte_science_dev_forum_minedHN-30e/checkpoint-500 \
+--fp16 \
+--add_instruction \
+--k 100 \
+--eval_data_name lotte_science_test_forum
+"""
