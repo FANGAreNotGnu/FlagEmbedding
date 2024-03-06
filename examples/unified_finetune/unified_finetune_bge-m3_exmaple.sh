@@ -1,6 +1,6 @@
 #!/bin/bash
 # Set root path
-ROOT=/home
+ROOT=/media/data
 
 # Set training machines
 # For more details, refer to https://www.deepspeed.ai/getting-started/#resource-configuration-multi-node
@@ -16,18 +16,18 @@ export LAUNCHER="deepspeed \
     $DISTRIBUTED_ARGS \
 	"
 # Set cache directory
-CACHE_PATH=$ROOT/datasets/.cache
+CACHE_PATH=$ROOT/ir_datasets/.cache
 
 # Set path of deepspeed config file
 # For more details, refer to https://huggingface.co/docs/transformers/main_classes/deepspeed#zero
-DS_CONFIG_FILE=$ROOT/train/ds_config.json
+DS_CONFIG_FILE=/media/code/FlagEmbedding/examples/finetune/ds_config.json
 
 # Set group size of training
 GROUP_SIZE=2
 
 # Set paths of training data. Every path **must be a directory path**.
 DATA_PATH="
-$ROOT/datasets/toy_train_data \
+$ROOT/flagfmt/lotte_science_dev_forum_minedHN \
 "
 
 # Set default batch size for training.
@@ -42,7 +42,7 @@ MAX_STEPS=-1
 # Set base model and save path
 BASE_MODEL=BAAI/bge-m3
 
-SAVE_PATH=$ROOT/models/bge-m3_finetuned
+SAVE_PATH=$ROOT/bge_models/bge-m3_finetuned-lotte_science_dev_forum_minedHN
 mkdir -p $SAVE_PATH
 
 # Set learning rate

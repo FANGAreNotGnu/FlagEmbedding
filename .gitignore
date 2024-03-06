@@ -1,3 +1,6 @@
+hostfile
+outputs
+
 *.memmap
 
 # Byte-compiled / optimized / DLL files
