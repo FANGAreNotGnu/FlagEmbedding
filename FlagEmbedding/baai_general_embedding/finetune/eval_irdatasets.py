@@ -152,7 +152,7 @@ def search(model: FlagModel, queries: datasets, faiss_index: faiss.Index, k:int 
     return all_scores, all_indices
     
     
-def evaluate(preds, labels, cutoffs=[1,10,100]):
+def evaluate(preds, labels, cutoffs=[1,3,5,10,100]):
     """
     Evaluate MRR and Recall at cutoffs.
     """
@@ -246,8 +246,8 @@ if __name__ == "__main__":
     main()
 
 """
-CUDA_VISIBLE_DEVICES=6,7 python -m FlagEmbedding.baai_general_embedding.finetune.eval_irdatasets \
---encoder /media/code/FlagEmbedding/outputs/lotte_science_dev_forum_minedHN-30e/checkpoint-500 \
+CUDA_VISIBLE_DEVICES=0,1,2,3,4,5 python -m FlagEmbedding.baai_general_embedding.finetune.eval_irdatasets \
+--encoder /media/code/FlagEmbedding/outputs/lotte_science_dev_forum_minedHN_m3_20e/checkpoint-6500 \
 --fp16 \
 --add_instruction \
 --k 100 \

@@ -40,7 +40,7 @@ with open(target_path, 'w+') as f:
             pos_texts.append(doc.text)
         #print(len(pos_texts))
 
-        f.write(json.dumps({"query": query_text, "pos": pos_texts}) + "\n")
+        f.write(json.dumps({"text": query_text, "pos": pos_texts}) + "\n")
 
         # TODO: print doc distribution per query to set hyperparameters for HN mining
 
