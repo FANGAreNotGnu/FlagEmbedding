@@ -1,5 +1,6 @@
 import argparse
 import json
+import os.path
 import random
 import numpy as np
 import faiss
@@ -97,6 +98,9 @@ def find_knn_neg(model, input_file, candidate_pool, output_file, sample_range, n
             filtered_inx = random.sample(filtered_inx, negative_number)
         data['neg'] = [corpus[inx] for inx in filtered_inx]
 
+    output_dir = os.path.dirname(output_file)
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
     with open(output_file, 'w') as f:
         for data in train_data:
             if len(data['neg']) < negative_number:

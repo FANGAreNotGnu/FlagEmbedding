@@ -114,12 +114,12 @@ def index(model: FlagModel, corpus: datasets.Dataset, batch_size: int = 256, max
     # create faiss index
     faiss_index = faiss.index_factory(dim, index_factory, faiss.METRIC_INNER_PRODUCT)
 
-    if model.device == torch.device("cuda"):
-        # co = faiss.GpuClonerOptions()
-        co = faiss.GpuMultipleClonerOptions()
-        co.useFloat16 = True
-        # faiss_index = faiss.index_cpu_to_gpu(faiss.StandardGpuResources(), 0, faiss_index, co)
-        faiss_index = faiss.index_cpu_to_all_gpus(faiss_index, co)
+    #if model.device == torch.device("cuda"):
+    #    # co = faiss.GpuClonerOptions()
+    #    co = faiss.GpuMultipleClonerOptions()
+    #    co.useFloat16 = True
+    #    # faiss_index = faiss.index_cpu_to_gpu(faiss.StandardGpuResources(), 0, faiss_index, co)
+    #    faiss_index = faiss.index_cpu_to_all_gpus(faiss_index, co)
 
     # NOTE: faiss only accepts float32
     logger.info("Adding embeddings...")
@@ -175,16 +175,20 @@ def evaluate(preds, labels, cutoffs=[1,3,5,10,100]):
         mrr = mrrs[i]
         metrics[f"MRR@{cutoff}"] = mrr
 
-    # Recall
+    # Recall and Success
     recalls = np.zeros(len(cutoffs))
+    successes = np.zeros(len(cutoffs))
     for pred, label in zip(preds, labels):
         for k, cutoff in enumerate(cutoffs):
             recall = np.intersect1d(label, pred[:cutoff])
             recalls[k] += len(recall) / len(label)
+            successes[k] += int(len(recall) > 0)
     recalls /= len(preds)
     for i, cutoff in enumerate(cutoffs):
         recall = recalls[i]
+        success = successes[i]
         metrics[f"Recall@{cutoff}"] = recall
+        metrics[f"Success@{cutoff}"] = success
 
     return metrics
 
