@@ -134,7 +134,7 @@ def search(model: FlagModel, queries: datasets, faiss_index: faiss.Index, k:int 
     1. Encode queries into dense embeddings;
     2. Search through faiss index
     """
-    query_embeddings = model.encode_queries(queries["text"], batch_size=batch_size, max_length=max_length)
+    query_embeddings = model.encode_queries(queries["query"], batch_size=batch_size, max_length=max_length)
     query_size = len(query_embeddings)
     
     all_scores = []

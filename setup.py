@@ -18,5 +18,7 @@ setup(
         'datasets',
         'accelerate>=0.20.1',
         'sentence_transformers',
+        'ir_datasets==0.5.6',
+        'faiss-gpu==1.7.2',
     ],
 )

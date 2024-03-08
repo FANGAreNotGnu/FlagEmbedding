@@ -40,7 +40,7 @@ with open(target_path, 'w+') as f:
             pos_texts.append(doc.text)
         #print(len(pos_texts))
 
-        f.write(json.dumps({"text": query_text, "pos": pos_texts}) + "\n")
+        f.write(json.dumps({"query": query_text, "pos": pos_texts}) + "\n")
 
         # TODO: print doc distribution per query to set hyperparameters for HN mining
 
@@ -79,5 +79,7 @@ CUDA_VISIBLE_DEVICES=0,1,2,3,4,5 torchrun --nproc_per_node 6 \
 --same_task_within_batch True \
 --unified_finetuning True \
 --use_self_distill True
+
+or use bge:
 
 """
