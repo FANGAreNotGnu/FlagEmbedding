@@ -171,9 +171,6 @@ def evaluate(preds, labels, cutoffs=[1,3,5,10,100]):
             if jump:
                 break
     mrrs /= len(preds)
-    for i, cutoff in enumerate(cutoffs):
-        mrr = mrrs[i]
-        metrics[f"MRR@{cutoff}"] = mrr
 
     # Recall and Success
     recalls = np.zeros(len(cutoffs))
@@ -184,11 +181,13 @@ def evaluate(preds, labels, cutoffs=[1,3,5,10,100]):
             recalls[k] += len(recall) / len(label)
             successes[k] += int(len(recall) > 0)
     recalls /= len(preds)
+    successes /= len(preds)
+
     for i, cutoff in enumerate(cutoffs):
-        recall = recalls[i]
-        success = successes[i]
-        metrics[f"Recall@{cutoff}"] = recall
-        metrics[f"Success@{cutoff}"] = success
+        metrics[f"MRR@{cutoff}"] = mrrs[i]
+        metrics[f"Recall@{cutoff}"] = recalls[i]
+        metrics[f"Success@{cutoff}"] = successes[i]
+
 
     return metrics
 
@@ -197,8 +196,8 @@ def main():
     parser = HfArgumentParser([Args])
     args: Args = parser.parse_args_into_dataclasses()[0]
 
-    eval_data_path = args.eval_data_root + args.eval_data_name + ".jsonl"
-    eval_data_corpus_path = args.eval_data_root + args.eval_data_name + "_corpus.jsonl"
+    eval_data_path = args.eval_data_root + args.eval_data_name.replace('/', "_") + ".jsonl"
+    eval_data_corpus_path = args.eval_data_root + args.eval_data_name.replace('/', "_") + "_corpus.jsonl"
 
     eval_data = load_dataset("json", data_files=eval_data_path)['train']
     corpus = load_dataset("json", data_files=eval_data_corpus_path)['train']
@@ -244,16 +243,27 @@ def main():
     metrics = evaluate(retrieval_results, ground_truths)
 
     print(metrics)
+    print('\n'.join([str(k) for k in metrics.keys()]))
+    print('\n'.join([str(v) for v in metrics.values()]))
 
 
 if __name__ == "__main__":
     main()
 
 """
-CUDA_VISIBLE_DEVICES=0,1,2,3,4,5 python -m FlagEmbedding.baai_general_embedding.finetune.eval_irdatasets \
---encoder /media/code/FlagEmbedding/outputs/lotte_science_dev_forum_minedHN_m3_20e/checkpoint-6500 \
+python -m FlagEmbedding.baai_general_embedding.finetune.eval_irdatasets \
+--encoder /media/code/FlagEmbedding/outputs/fiqa_HN_m3_20e_dense_64bs_1e-5 \
 --fp16 \
 --add_instruction \
 --k 100 \
+--max_passage_length 300 \
+--eval_data_name lotte_science_test_forum 
+
+python -m FlagEmbedding.baai_general_embedding.finetune.eval_irdatasets \
+--encoder BAAI/bge-m3 \
+--fp16 \
+--add_instruction \
+--k 100 \
+--passage_max_len 300 \
 --eval_data_name lotte_science_test_forum
 """

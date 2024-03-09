@@ -20,5 +20,7 @@ setup(
         'sentence_transformers',
         'ir_datasets==0.5.6',
         'faiss-gpu==1.7.2',
+        'sentencepiece==0.2.0',
+        'protobuf==4.25.3',
     ],
 )
