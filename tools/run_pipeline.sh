@@ -1,32 +1,38 @@
-TRAIN_DATASET=beir/fiqa/train
-HN_NAME=beir_fiqa_train_minedHN
-DEV_DATASET=beir/fiqa/dev
-TEST_DATASET=beir/fiqa/test
-OUTPUT_NAME=fiqa_HN_dense
+TRAIN_DATASET=lotte/pooled/dev/forum
+HN_NAME=lotte_pooled_dev_forum_minedHN_easier
+CORPUS_NAME=lotte_pooled_dev_forum_corpus
+DEV_DATASET=lotte/pooled/dev/forum
+TEST_DATASET=lotte/pooled/test/forum
+OUTPUT_NAME=lotte_pooled_dev_forum_HN_easier_dense
+
+range_for_sampling=500-1000
+negative_number=7
 
 MODEL_NAME=BAAI/bge-m3
-LR=1e-5
-EPOCHS=3
+LR=1e-6
+EPOCHS=14
 TEMP=0.02
 
-OUTPUT_DIR=${OUTPUT_NAME}_${MODEL_NAME}_lr${LR}_${EPOCHS}e_t${TEMP}
+
+OUTPUT_DIR=/media/code/FlagEmbedding/checkpoints/${OUTPUT_NAME}_${MODEL_NAME}_lr${LR}_${EPOCHS}e_t${TEMP}
 
 PER_GPU_BS=8
 MAX_Q=128
 MAX_DOC=512
 
-python3 /media/code/FlagEmbedding/tools/prepare_irdatasets.py \
-  --dataset_names $TRAIN_DATASET $DEV_DATASET $TEST_DATASET
+#python3 /media/code/FlagEmbedding/tools/prepare_irdatasets.py \
+#  --dataset_names $TRAIN_DATASET $DEV_DATASET $TEST_DATASET
 
-python -m FlagEmbedding.baai_general_embedding.finetune.hn_mine_irdatasets \
---model_name_or_path BAAI/bge-m3 \
---dataset_name $TRAIN_DATASET \
---range_for_sampling 10-100 \
---negative_number 3
+#python -m FlagEmbedding.baai_general_embedding.finetune.hn_mine_irdatasets \
+#--model_name_or_path $MODEL_NAME \
+#--dataset_name $TRAIN_DATASET \
+#--range_for_sampling 10-100 \
+#--negative_number 10 \
+#--use_gpu_for_searching
 
 torchrun --nproc_per_node 8 \
 -m FlagEmbedding.baai_general_embedding.finetune.run \
---output_dir /media/code/FlagEmbedding/outputs/${OUTPUT_DIR} \
+--output_dir ${OUTPUT_DIR} \
 --model_name_or_path $MODEL_NAME \
 --train_data /media/data/flagfmt/${HN_NAME} \
 --learning_rate ${LR} \

@@ -36,7 +36,8 @@ def prepare_data(dataset_name):
         did = qrel.doc_id
         rel = qrel.relevance
         # TODO: add relevance ifelse
-        query_data[qid]["pos_did"].append(did)
+        if int(rel) > 0:
+            query_data[qid]["pos_did"].append(did)
 
     num_pos_samples = []
     with open(target_path, 'w+') as f:
@@ -44,7 +45,11 @@ def prepare_data(dataset_name):
             query_text = q_data["text"]
             pos_texts = []
             for pos_did in q_data["pos_did"]:
-                doc = docstore.get(pos_did)
+                try:
+                    doc = docstore.get(pos_did)
+                except KeyError:
+                    print(f"doc id not found: {pos_did}")
+                    continue
                 pos_texts.append(doc.text)
             num_pos_samples.append(len(pos_texts))
             #print(len(pos_texts))
@@ -119,4 +124,12 @@ python -m FlagEmbedding.baai_general_embedding.finetune.eval_irdatasets \
 --k 100 \
 --max_passage_length 512 \
 --eval_data_name beir_fiqa_test 
+
+python -m FlagEmbedding.baai_general_embedding.finetune.eval_irdatasets \
+--encoder BAAI/bge-m3 \
+--fp16 \
+--add_instruction \
+--k 100 \
+--max_passage_length 512 \
+--eval_data_name beir/nfcorpus/test
 """

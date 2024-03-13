@@ -9,6 +9,7 @@ from dataclasses import dataclass, field
 from datasets import load_dataset
 from transformers import HfArgumentParser
 from FlagEmbedding import FlagModel
+from sklearn.metrics import ndcg_score
 
 logger = logging.getLogger(__name__)
 
@@ -188,7 +189,6 @@ def evaluate(preds, labels, cutoffs=[1,3,5,10,100]):
         metrics[f"Recall@{cutoff}"] = recalls[i]
         metrics[f"Success@{cutoff}"] = successes[i]
 
-
     return metrics
 
 
@@ -245,6 +245,7 @@ def main():
     print(metrics)
     print('\n'.join([str(k) for k in metrics.keys()]))
     print('\n'.join([str(v) for v in metrics.values()]))
+    print(args.encoder)
 
 
 if __name__ == "__main__":
@@ -264,6 +265,6 @@ python -m FlagEmbedding.baai_general_embedding.finetune.eval_irdatasets \
 --fp16 \
 --add_instruction \
 --k 100 \
---passage_max_len 300 \
---eval_data_name lotte_science_test_forum
+--max_passage_length 512 \
+--eval_data_name lotte_pooled_test_forum
 """
