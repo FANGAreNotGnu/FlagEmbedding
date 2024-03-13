@@ -1,5 +1,8 @@
 hostfile
 outputs
+checkpoints
+
+
 
 *.memmap
 
