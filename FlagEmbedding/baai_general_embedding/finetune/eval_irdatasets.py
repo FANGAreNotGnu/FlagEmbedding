@@ -153,10 +153,22 @@ def search(model: FlagModel, queries: datasets, faiss_index: faiss.Index, k:int 
     return all_scores, all_indices
     
     
-def evaluate(preds, labels, cutoffs=[1,3,5,10,100]):
+def evaluate(preds, labels, scores, cutoffs):
     """
     Evaluate MRR and Recall at cutoffs.
+    preds: (N, args.k) of texts
+    labels: (N, <dynamic>num_pos) of texts
+    scores: (N, args.k) of rel scores in [0,1]
     """
+    N = len(preds)
+    max_cutoff = len(preds[0])
+    assert max(cutoffs) <= max_cutoff, f"k {max(cutoffs)} and k {max_cutoff}"
+
+    assert len(preds[-1]) == max_cutoff, f"shape {preds[-1]} and shape {max_cutoff}"
+    assert len(labels) == N, f"shape {len(labels)} and shape {N}"
+    assert len(scores) == N, f"shape {len(scores)} and shape {N}"
+    assert len(scores[0]) == max_cutoff, f"shape {len(scores[0])} and shape {max_cutoff}"
+
     metrics = {}
     
     # MRR
@@ -173,7 +185,7 @@ def evaluate(preds, labels, cutoffs=[1,3,5,10,100]):
                 break
     mrrs /= len(preds)
 
-    # Recall and Success
+    # Recall, Success, and NDCG
     recalls = np.zeros(len(cutoffs))
     successes = np.zeros(len(cutoffs))
     for pred, label in zip(preds, labels):
@@ -181,6 +193,24 @@ def evaluate(preds, labels, cutoffs=[1,3,5,10,100]):
             recall = np.intersect1d(label, pred[:cutoff])
             recalls[k] += len(recall) / len(label)
             successes[k] += int(len(recall) > 0)
+
+    # NDCG
+    ndcgs = np.zeros(len(cutoffs))
+    true_labels = []
+    for pred, label in zip(preds, labels):
+        true_labels_per_query = []
+        for pred_text in pred:
+            if pred_text in label:
+                true_labels_per_query.append(1)
+            else:
+                true_labels_per_query.append(0)
+        true_labels.append(true_labels_per_query)
+    for k, cutoff in enumerate(cutoffs):
+            if cutoff <= 1:
+                ndcgs[k] = -1
+            else:
+                ndcgs[k] = ndcg_score(true_labels, scores, k=cutoff)
+
     recalls /= len(preds)
     successes /= len(preds)
 
@@ -188,11 +218,14 @@ def evaluate(preds, labels, cutoffs=[1,3,5,10,100]):
         metrics[f"MRR@{cutoff}"] = mrrs[i]
         metrics[f"Recall@{cutoff}"] = recalls[i]
         metrics[f"Success@{cutoff}"] = successes[i]
+        metrics[f"NDCG@{cutoff}"] = ndcgs[i]
 
     return metrics
 
 
 def main():
+    cutoffs = [1,3,5,10,100]
+
     parser = HfArgumentParser([Args])
     args: Args = parser.parse_args_into_dataclasses()[0]
 
@@ -231,7 +264,7 @@ def main():
     retrieval_results = []
     for indice in indices:
         # filter invalid indices
-        indice = indice[indice != -1].tolist()
+        # indice = indice[indice != -1].tolist()
         retrieval_results.append(corpus[indice]["text"])
 
     ground_truths = []
@@ -240,7 +273,7 @@ def main():
         
     from FlagEmbedding.llm_embedder.src.utils import save_json
 
-    metrics = evaluate(retrieval_results, ground_truths)
+    metrics = evaluate(retrieval_results, ground_truths, scores, cutoffs=cutoffs)
 
     print(metrics)
     print('\n'.join([str(k) for k in metrics.keys()]))
@@ -261,10 +294,18 @@ python -m FlagEmbedding.baai_general_embedding.finetune.eval_irdatasets \
 --eval_data_name lotte_science_test_forum 
 
 python -m FlagEmbedding.baai_general_embedding.finetune.eval_irdatasets \
---encoder BAAI/bge-m3 \
+--encoder BAAI/bge-large-en-v1.5 \
 --fp16 \
 --add_instruction \
 --k 100 \
 --max_passage_length 512 \
---eval_data_name lotte_pooled_test_forum
+--eval_data_name beir_fiqa_test
+
+python -m FlagEmbedding.baai_general_embedding.finetune.eval_irdatasets \
+--encoder /media/code/FlagEmbedding/checkpoints/fiqa_HN_dense_BAAI/bge-m3_lr1e-6_2e_t0.02 \
+--fp16 \
+--add_instruction \
+--k 100 \
+--max_passage_length 512 \
+--eval_data_name beir_fiqa_test
 """

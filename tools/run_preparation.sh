@@ -1,11 +1,13 @@
-TRAIN_DATASET=lotte/pooled/dev/forum
-HN_NAME=lotte_pooled_dev_forum_minedHN
-CORPUS_NAME=lotte_pooled_dev_forum_corpus
-DEV_DATASET=lotte/pooled/dev/forum
-TEST_DATASET=lotte/pooled/test/forum
-OUTPUT_NAME=lotte_pooled_dev_forum_HN_dense
+TRAIN_DATASET=beir/fiqa/train
+DEV_DATASET=beir/fiqa/dev
+TEST_DATASET=beir/fiqa/test
+FLATTENED_NAME=beir_fiqa_train
 
-MODEL_NAME=BAAI/bge-m3
+HN_NAME=${FLATTENED_NAME}_minedHN
+CORPUS_NAME=${FLATTENED_NAME}_corpus
+OUTPUT_NAME=${FLATTENED_NAME}_HN_easier_dense
+
+MODEL_NAME=BAAI/bge-large-en-v1.5
 LR=1e-6
 EPOCHS=3
 TEMP=0.02
