@@ -299,13 +299,13 @@ python -m FlagEmbedding.baai_general_embedding.finetune.eval_irdatasets \
 --add_instruction \
 --k 100 \
 --max_passage_length 512 \
---eval_data_name beir_fiqa_test
+--eval_data_name beir_scifact_test
 
 python -m FlagEmbedding.baai_general_embedding.finetune.eval_irdatasets \
---encoder /media/code/FlagEmbedding/checkpoints/fiqa_HN_dense_BAAI/bge-m3_lr1e-6_2e_t0.02 \
+--encoder /media/code/FlagEmbedding/checkpoints/beir_fever_train_HN_dense_BAAI/bge-m3_lr1e-6_4e_t0.02 \
 --fp16 \
 --add_instruction \
 --k 100 \
 --max_passage_length 512 \
---eval_data_name beir_fiqa_test
+--eval_data_name beir_fever_test
 """

@@ -18,6 +18,7 @@ def get_args():
     parser.add_argument('--use_gpu_for_searching', action='store_true', help='use faiss-gpu')
     parser.add_argument('--negative_number', default=15, type=int, help='the number of negatives')
     parser.add_argument('--query_instruction_for_retrieval', default="")
+    parser.add_argument('--postfix', default="_minedHN")
 
     return parser.parse_args()
 
@@ -115,7 +116,7 @@ if __name__ == '__main__':
     model = FlagModel(args.model_name_or_path, query_instruction_for_retrieval=args.query_instruction_for_retrieval)
 
     input_file = f"/media/data/flagfmt/{args.dataset_name.replace('/','_')}.jsonl"
-    output_file = f"/media/data/flagfmt/{args.dataset_name.replace('/','_')}_minedHN/{args.dataset_name.replace('/','_')}_minedHN.jsonl"
+    output_file = f"/media/data/flagfmt/{args.dataset_name.replace('/','_')}{args.postfix}/{args.dataset_name.replace('/','_')}{args.postfix}.jsonl"
 
     find_knn_neg(model,
                  input_file=input_file,
