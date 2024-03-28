@@ -1,18 +1,19 @@
-TRAIN_DATASET=beir/scifact/train
-DEV_DATASET=beir/scifact/train
-TEST_DATASET=beir/scifact/test
-FLATTENED_NAME=beir_scifact_train
+TRAIN_DATASET=beir/nfcorpus/train
+DEV_DATASET=beir/nfcorpus/train
+TEST_DATASET=beir/nfcorpus/test
+FLATTENED_NAME=beir_nfcorpus_train
+POSTFIX=_adjustedHN
 
-HN_NAME=${FLATTENED_NAME}_minedHN
+HN_NAME=${FLATTENED_NAME}${POSTFIX}
 CORPUS_NAME=${FLATTENED_NAME}_corpus
-OUTPUT_NAME=${FLATTENED_NAME}_HN_dense
+OUTPUT_NAME=${FLATTENED_NAME}${POSTFIX}
 
-range_for_sampling=3-6
-negative_number=2
+range_for_sampling=350-1350
+negative_number=500
 
 MODEL_NAME=BAAI/bge-large-en-v1.5
 LR=1e-6
-EPOCHS=1000
+EPOCHS=100
 TEMP=0.02
 
 OUTPUT_DIR=/media/code/FlagEmbedding/checkpoints/${OUTPUT_NAME}_${MODEL_NAME}_lr${LR}_${EPOCHS}e_t${TEMP}

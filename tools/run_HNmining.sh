@@ -1,14 +1,15 @@
-TRAIN_DATASET=tripclick/train/head
-DEV_DATASET=tripclick/train/head
-TEST_DATASET=tripclick/val/head
-FLATTENED_NAME=tripclick_train_head
+TRAIN_DATASET=beir/nfcorpus/train
+DEV_DATASET=beir/nfcorpus/train
+TEST_DATASET=beir/nfcorpus/test
+FLATTENED_NAME=beir_nfcorpus_train
+POSTFIX=_adjustedHN
 
-HN_NAME=${FLATTENED_NAME}_minedHN
+HN_NAME=${FLATTENED_NAME}${POSTFIX}
 CORPUS_NAME=${FLATTENED_NAME}_corpus
-OUTPUT_NAME=${FLATTENED_NAME}_HN_dense
+OUTPUT_NAME=${FLATTENED_NAME}${POSTFIX}
 
-range_for_sampling=120-240
-negative_number=16
+range_for_sampling=350-1350
+negative_number=500
 
 MODEL_NAME=BAAI/bge-large-en-v1.5
 LR=1e-6
@@ -26,5 +27,6 @@ python -m FlagEmbedding.baai_general_embedding.finetune.hn_mine_irdatasets \
 --dataset_name $TRAIN_DATASET \
 --range_for_sampling $range_for_sampling \
 --negative_number $negative_number \
---candidate_pool /media/data/flagfmt/${CORPUS_NAME}.jsonl
+--candidate_pool /media/data/flagfmt/${CORPUS_NAME}.jsonl \
+--postfix $POSTFIX
 

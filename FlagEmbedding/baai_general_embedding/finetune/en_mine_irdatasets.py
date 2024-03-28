@@ -13,7 +13,7 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dataset_name', default=None, type=str)
     parser.add_argument('--candidate_pool', default=None, type=str)
-    parser.add_argument('--negative_number', default=15, type=int, help='the number of negatives')
+    parser.add_argument('--negative_number', default=1000, type=int, help='the number of negatives')
     parser.add_argument('--postfix', default="_minedEN")
 
     return parser.parse_args()
@@ -57,8 +57,6 @@ def find_knn_neg(input_file, candidate_pool, output_file, negative_number):
 
 if __name__ == '__main__':
     args = get_args()
-    sample_range = args.range_for_sampling.split('-')
-    sample_range = [int(x) for x in sample_range]
 
     input_file = f"/media/data/flagfmt/{args.dataset_name.replace('/','_')}.jsonl"
     output_file = f"/media/data/flagfmt/{args.dataset_name.replace('/','_')}{args.postfix}/{args.dataset_name.replace('/','_')}{args.postfix}.jsonl"

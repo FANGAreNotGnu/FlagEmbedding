@@ -1,18 +1,12 @@
-TRAIN_DATASET=beir/nfcorpus/train
-DEV_DATASET=beir/nfcorpus/train
-TEST_DATASET=beir/nfcorpus/test
-FLATTENED_NAME=beir_nfcorpus_train
+TEST_DATASET=tripclick/val/head
+FLATTENED_NAME=tripclick_train_head
 
 HN_NAME=${FLATTENED_NAME}_minedEN
-CORPUS_NAME=${FLATTENED_NAME}_corpus
 OUTPUT_NAME=${FLATTENED_NAME}_EN_dense
-
-range_for_sampling=1-3632
-negative_number=500
 
 MODEL_NAME=BAAI/bge-large-en-v1.5
 LR=1e-6
-EPOCHS=200
+EPOCHS=50
 TEMP=0.02
 
 OUTPUT_DIR=/media/code/FlagEmbedding/checkpoints/${OUTPUT_NAME}_${MODEL_NAME}_lr${LR}_${EPOCHS}e_t${TEMP}
@@ -45,7 +39,7 @@ torchrun --nproc_per_node 8 \
 --temperature $TEMP \
 --query_max_len ${MAX_Q} \
 --passage_max_len ${MAX_DOC} \
---train_group_size 1 \
+--train_group_size 2 \
 --negatives_cross_device \
 --logging_steps 10 \
 --query_instruction_for_retrieval "" \

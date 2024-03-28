@@ -8,6 +8,8 @@ from tqdm import tqdm
 from typing import List
 
 import ir_datasets
+
+
 @dataclass
 class Args:
     dataset_names: List[str] = field(default_factory=lambda: [])
