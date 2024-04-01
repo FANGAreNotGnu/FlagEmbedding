@@ -1,0 +1,50 @@
+# General
+data:
+  train: "tripclick/train/head"
+  val: "tripclick/val/head"
+  test: "tripclick/test/head"
+pretrain:
+  model: "BAAI/bge-large-en-v1.5"
+  query_instruction_for_retrieval: ""
+
+# Deduplication
+dedup:
+  model: null  # if null, use backbone
+  kept_pct: 0.25  # percentage of data to be kept
+  dedup_mode: "ep"  # ep: remove easy positve, ran: remove random positive
+
+# Negative Mining
+mining:
+  model: null  # used in hard negative mining, if null, use backbone
+  mode: "hard"  # easy: random sample, hard: select hard negative
+  range_for_sampling: "100-1100"  # used in hard negative mining
+  negative_number: 500  # number of negative samples
+
+# Finetune
+optimization:
+  lr: 1e-6
+  epochs: 88
+  temp: 0.02
+  per_gpu_batch_size: 8
+  max_query_len: 128
+  max_doc_len: 512
+  max_grad_norm: 1.0
+  max_steps: -1
+  save_steps: 1000
+  fp16: True
+  train_group_size: 2
+  negatives_cross_device: True
+  warmup_ratio: 0.0
+  weight_decay: 0.0
+
+  use_inbatch_neg: True
+  lr_scheduler_type: "linear"
+  dataloader_drop_last: True
+  disable_tqdm: False
+  full_determinism: False
+  logging_steps: 10
+
+# Test
+evaluate:
+  add_instruction: True
+  k: 100

@@ -1,12 +1,12 @@
 TEST_DATASET=tripclick/val/head
-FLATTENED_NAME=tripclick_train_head
+FLATTENED_NAME=tripclick_train_head_dedup0.25
 
 HN_NAME=${FLATTENED_NAME}_minedEN
 OUTPUT_NAME=${FLATTENED_NAME}_EN_dense
 
 MODEL_NAME=BAAI/bge-large-en-v1.5
 LR=1e-6
-EPOCHS=50
+EPOCHS=8
 TEMP=0.02
 
 OUTPUT_DIR=/media/code/FlagEmbedding/checkpoints/${OUTPUT_NAME}_${MODEL_NAME}_lr${LR}_${EPOCHS}e_t${TEMP}

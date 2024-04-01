@@ -1,4 +1,4 @@
-TRAIN_DATASET=tripclick_train_head
+TRAIN_DATASET=tripclick_train_head_dedup0.25
 FLATTENED_NAME=tripclick_train_head
 
 CORPUS_NAME=${FLATTENED_NAME}_corpus

@@ -5,19 +5,11 @@ from tqdm import tqdm
 
 from FlagEmbedding import FlagModel
 from FlagEmbedding.dedup.load_data import load_positive_pairs, save_positive_pairs
+from FlagEmbedding.baai_general_embedding.pipeline.dedup import deduplicate_pairs
+from FlagEmbedding.baai_general_embedding.pipeline.utils import load_positive_pairs, save_positive_pairs, get_flag_format_dataset_path, get_deduplicated_dataset_path
 
 
-def get_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--model_name_or_path', default=None, type=str)
-    parser.add_argument('--input_name', default=None, type=str)
-    parser.add_argument('--output_name', default=None, type=str)
-    parser.add_argument('--kept_pct', default=None, type=float)
-    parser.add_argument('--dedup_mode', default=None, type=str)
-
-    return parser.parse_args()
-
-
+# pairwise
 def remove_easy_positive(pairs, model, kept_pct):
     """
     pairs: [{"query":<query>,"doc":<doc>}, ...]
@@ -45,6 +37,7 @@ def remove_easy_positive(pairs, model, kept_pct):
     return kept_pairs
 
 
+# pairwise
 def remove_random(pairs, kept_pct):
     """
     pairs: [{"query":<query>,"doc":<doc>}, ...]
@@ -56,7 +49,6 @@ def remove_random(pairs, kept_pct):
     kept_pairs = random.sample(pairs, kept_number)
 
     return kept_pairs
-
 
 
 def deduplicate_pairs(input_file, output_file, kept_pct, model, dedup_mode="ep"):
@@ -78,18 +70,17 @@ def deduplicate_pairs(input_file, output_file, kept_pct, model, dedup_mode="ep")
     print(f"dedup {len(kept_pairs)} out of {len(pairs)} pairs from {input_file} to {output_file}")
 
 
-if __name__ == "__main__":
-    args = get_args()
+def dedup(config):
+    dedup_model = config.dedup.model
+    if dedup_model is None:
+        dedup_model = config.pretrain.model
 
-    model = FlagModel(args.model_name_or_path, query_instruction_for_retrieval="")
-
-    input_file = f"/media/data/flagfmt/{args.input_name}.jsonl"
-    output_file = f"/media/data/flagfmt/{args.output_name}.jsonl"
+    model = FlagModel(dedup_model, query_instruction_for_retrieval=config.pretrain.query_instruction_for_retrieval)
 
     deduplicate_pairs(
-        input_file=input_file,
-        output_file=output_file,
+        input_file=get_flag_format_dataset_path(config),
+        output_file=get_deduplicated_dataset_path(config),
         model=model,
-        kept_pct=args.kept_pct,
-        dedup_mode=args.dedup_mode,
+        kept_pct=config.dedup.kept_pct,
+        dedup_mode=config.dedup.mode,
     )
