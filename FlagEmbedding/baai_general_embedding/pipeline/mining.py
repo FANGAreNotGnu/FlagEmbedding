@@ -7,7 +7,7 @@ import faiss
 from tqdm import tqdm
 
 from FlagEmbedding import FlagModel
-from FlagEmbedding.baai_general_embedding.pipeline.utils import get_corpus
+from FlagEmbedding.baai_general_embedding.pipeline.utils import load_config, get_corpus_name, get_deduplicated_dataset, get_mined_dataset, seed_everything
 
 
 def get_args():
@@ -145,29 +145,38 @@ def mining(config):
     if mining_model is None:
         mining_model = config.pretrain.model
 
-    model = FlagModel(mining_model, query_instruction_for_retrieval=config.pretrain.query_instruction_for_retrieval)
+    model = FlagModel(mining_model, query_instruction_for_retrieval=config.data.query_instruction_for_retrieval)
 
-    corpus_path = f"/media/data/flagfmt/${CORPUS_NAME}_corpus.jsonl"
+    corpus_path = get_corpus_name(config)
 
-    input_file = f"/media/data/flagfmt/{args.dataset_name.replace('/','_')}.jsonl"
-    output_file = f"/media/data/flagfmt/{args.dataset_name.replace('/','_')}{args.postfix}/{args.dataset_name.replace('/','_')}{args.postfix}.jsonl"
+    input_file = get_deduplicated_dataset(config)
+    output_file = get_mined_dataset(config)
 
     if config.mining.mode == "hard":
         find_hard_neg(model,
                      input_file=input_file,
-                     candidate_pool=args.candidate_pool,
+                     candidate_pool=corpus_path,
                      output_file=output_file,
                      sample_range=sample_range,
-                     negative_number=args.negative_number,
-                     use_gpu=args.use_gpu_for_searching)
+                     negative_number=config.mining.negative_number,
+                     use_gpu=False)
     elif config.mining.mode == "easy":
         find_easy_neg(
             input_file=input_file,
-            candidate_pool=args.candidate_pool,
+            candidate_pool=corpus_path,
             output_file=output_file,
-            negative_number=args.negative_number,
+            negative_number=config.mining.negative_number,
         )
     else:
         raise ValueError(f"Unsupported mining mode: {config.mining.mode}")
 
 
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--cfg', type=str)
+    args = parser.parse_args()
+    config = load_config(args.cfg)
+
+    seed_everything(config)
+
+    mining(config)

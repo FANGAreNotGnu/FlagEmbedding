@@ -1,0 +1,73 @@
+# General
+seed: 42
+data:
+  train: "tripclick/train/head"
+  val: "tripclick/train/head"
+  test: "tripclick/val/head"
+  train_group_size: 2
+  query_max_len: 128
+  passage_max_len: 512
+  max_example_num_per_dataset: 100000000
+  query_instruction_for_retrieval: null
+  passage_instruction_for_retrieval: null
+pretrain:
+  model: "BAAI/bge-large-en-v1.5"
+
+# Deduplication
+dedup:
+  model: null  # if null, use backbone
+  kept_pct: 0.25  # percentage of data to be kept
+  mode: "ep"  # ep: remove easy positve, ran: remove random positive
+
+# Negative Mining
+mining:
+  model: null  # used in hard negative mining, if null, use backbone
+  mode: "hard"  # easy: random sample, hard: select hard negative
+  range_for_sampling: "100-1100"  # used in hard negative mining
+  negative_number: 500  # number of negative samples
+
+# Finetune
+optimization:
+  learning_rate: 1e-6
+  num_train_epochs: 32
+  per_device_train_batch_size: 8
+  max_grad_norm: 1.0
+  save_steps: 100
+  fp16: True
+  warmup_ratio: 0.0
+  weight_decay: 0.0
+
+  lr_scheduler_type: "linear"
+  dataloader_drop_last: True
+  disable_tqdm: False
+  full_determinism: False
+  logging_steps: 10
+
+  temperature: 0.02
+  negatives_cross_device: True
+  fix_position_embedding: False
+  sentence_pooling_method: "cls"
+  normlized: True
+  use_inbatch_neg: True
+
+# Test
+evaluate:
+  add_instruction: True
+  k: 100
+  eval_modes:  # pretrain, finetune, allckpts, ckpt%d
+    - "pretrain"
+    #- "finetune"
+    #- "allckpts"
+  cutoffs:
+    - 1
+    - 3
+    - 5
+    - 10
+    - 30
+    - 50
+    - 100
+  index_factory: "Flat"
+  save_path: "embeddings.memmap"
+  save_embedding: False
+  load_embedding: False
+  bs_multiplier: 8

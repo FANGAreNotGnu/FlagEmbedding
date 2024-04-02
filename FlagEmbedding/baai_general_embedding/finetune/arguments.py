@@ -12,7 +12,7 @@ class ModelArguments:
     """
 
     model_name_or_path: str = field(
-        metadata={"help": "Path to pretrained model or model identifier from huggingface.co/models"}
+        default=None, metadata={"help": "Path to pretrained model or model identifier from huggingface.co/models"}
     )
     config_name: Optional[str] = field(
         default=None, metadata={"help": "Pretrained config name or path if not the same as model_name"}
@@ -23,13 +23,16 @@ class ModelArguments:
     cache_dir: Optional[str] = field(
         default=None, metadata={"help": "Where do you want to store the pretrained models downloaded from s3"}
     )
+    cfg: Optional[str] = field(
+        default=None, metadata={"help": "experiment config"}
+    )
 
 
 
 @dataclass
 class DataArguments:
     train_data: str = field(
-        default=None, metadata={"help": "Path to train data"}
+        default="", metadata={"help": "Path to train data"}
     )
     train_group_size: int = field(default=8)
 
@@ -62,10 +65,13 @@ class DataArguments:
 
     def __post_init__(self):
         if not os.path.exists(self.train_data):
-            raise FileNotFoundError(f"cannot find file: {self.train_data}, please set a true path")
+            print(f"cannot find file: {self.train_data}, please set a true path")
 
 @dataclass
 class RetrieverTrainingArguments(TrainingArguments):
+    output_dir: str = field(
+        default=None, metadata={"help": "overtwrite"}
+    )
     negatives_cross_device: bool = field(default=False, metadata={"help": "share negatives across devices"})
     temperature: Optional[float] = field(default=0.02)
     fix_position_embedding: bool = field(default=False, metadata={"help": "Freeze the parameters of position embeddings"})

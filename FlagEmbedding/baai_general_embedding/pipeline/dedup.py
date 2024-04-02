@@ -4,9 +4,7 @@ import random
 from tqdm import tqdm
 
 from FlagEmbedding import FlagModel
-from FlagEmbedding.dedup.load_data import load_positive_pairs, save_positive_pairs
-from FlagEmbedding.baai_general_embedding.pipeline.dedup import deduplicate_pairs
-from FlagEmbedding.baai_general_embedding.pipeline.utils import load_positive_pairs, save_positive_pairs, get_flag_format_dataset_path, get_deduplicated_dataset_path
+from FlagEmbedding.baai_general_embedding.pipeline.utils import load_config, load_positive_pairs, save_positive_pairs, get_flag_format_dataset, get_deduplicated_dataset, seed_everything
 
 
 # pairwise
@@ -75,12 +73,23 @@ def dedup(config):
     if dedup_model is None:
         dedup_model = config.pretrain.model
 
-    model = FlagModel(dedup_model, query_instruction_for_retrieval=config.pretrain.query_instruction_for_retrieval)
+    model = FlagModel(dedup_model, query_instruction_for_retrieval=config.data.query_instruction_for_retrieval)
 
     deduplicate_pairs(
-        input_file=get_flag_format_dataset_path(config),
-        output_file=get_deduplicated_dataset_path(config),
+        input_file=get_flag_format_dataset(config)[0],
+        output_file=get_deduplicated_dataset(config),
         model=model,
         kept_pct=config.dedup.kept_pct,
         dedup_mode=config.dedup.mode,
     )
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--cfg', type=str)
+    args = parser.parse_args()
+    config = load_config(args.cfg)
+
+    seed_everything(config)
+
+    dedup(config)
