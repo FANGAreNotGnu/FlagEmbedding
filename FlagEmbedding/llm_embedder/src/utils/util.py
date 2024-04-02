@@ -16,7 +16,7 @@ from dataclasses import dataclass
 from transformers.tokenization_utils import PreTrainedTokenizer
 from datetime import datetime
 from collections import defaultdict, OrderedDict
-from typing import Optional, Tuple, Union, List, Callable, Dict, Any, Mapping
+from typing import Optional, List, Dict, Any, Mapping
 
 logger = logging.getLogger(__name__)
 

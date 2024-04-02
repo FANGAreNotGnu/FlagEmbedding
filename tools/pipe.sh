@@ -1,7 +1,7 @@
 CONFIG=/media/code/FlagEmbedding/FlagEmbedding/baai_general_embedding/pipeline/default_config.yaml
-DEDUP=false
-MINING=false
-FINETUNE=false
+DEDUP=true
+MINING=true
+FINETUNE=true
 EVALUATE=true
 
 if $DEDUP; then

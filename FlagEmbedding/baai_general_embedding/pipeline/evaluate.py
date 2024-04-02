@@ -1,14 +1,10 @@
 import argparse
 import faiss
-import torch
 import logging
 import datasets
 import numpy as np
 from tqdm import tqdm
-from typing import Optional
-from dataclasses import dataclass, field
 from datasets import load_dataset
-from transformers import HfArgumentParser
 from FlagEmbedding import FlagModel
 from sklearn.metrics import ndcg_score
 
@@ -174,6 +170,7 @@ def evaluate(encoder_name, config):
 
     eval_data_path = get_flag_format_dataset(config)[2]
     eval_data_corpus_path = get_corpus_name(config, return_split="test")
+    #eval_data_corpus_path = get_corpus_name(config)
 
     eval_data = load_dataset("json", data_files=eval_data_path)['train']
     corpus = load_dataset("json", data_files=eval_data_corpus_path)['train']
@@ -217,12 +214,12 @@ def evaluate(encoder_name, config):
     from FlagEmbedding.llm_embedder.src.utils import save_json
     # save_json(obj, path:str)
 
-    metrics = evaluate(retrieval_results, ground_truths, scores, cutoffs=cutoffs)
+    metrics = compute_metric(retrieval_results, ground_truths, scores, cutoffs=cutoffs)
 
     print(metrics)
     print('\n'.join([str(k) for k in metrics.keys()]))
     print('\n'.join([str(v) for v in metrics.values()]))
-    print(args.encoder)
+    print(encoder_name)
 
     result_path = get_result_path(encoder_name, config)
     save_json(metrics, result_path)

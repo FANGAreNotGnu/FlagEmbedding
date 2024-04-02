@@ -1,7 +1,6 @@
 import argparse
 import numpy as np
 import random
-from tqdm import tqdm
 
 from FlagEmbedding import FlagModel
 from FlagEmbedding.baai_general_embedding.pipeline.utils import load_config, load_positive_pairs, save_positive_pairs, get_flag_format_dataset, get_deduplicated_dataset, seed_everything
