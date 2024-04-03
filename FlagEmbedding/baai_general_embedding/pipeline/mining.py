@@ -138,8 +138,6 @@ def find_easy_neg(input_file, candidate_pool, output_file, negative_number):
 
 
 def mining(config):
-    sample_range = config.mining.range_for_sampling.split('-')
-    sample_range = [int(x) for x in sample_range]
 
     mining_model = config.mining.model
     if mining_model is None:
@@ -153,6 +151,8 @@ def mining(config):
     output_file = get_mined_dataset(config)
 
     if config.mining.mode == "hard":
+        sample_range = config.mining.range_for_sampling.split('-')
+        sample_range = [int(x) for x in sample_range]
         find_hard_neg(model,
                      input_file=input_file,
                      candidate_pool=corpus_path,

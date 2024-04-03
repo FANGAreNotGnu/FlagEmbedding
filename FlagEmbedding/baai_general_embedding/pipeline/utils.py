@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 
 DATA_ROOT = "/media/data/flagfmt"
-CKPT_ROOT = "/media/data/ragckpt"
+CKPT_ROOT = "/media/ragckpts"
 
 
 def load_config(config_path):

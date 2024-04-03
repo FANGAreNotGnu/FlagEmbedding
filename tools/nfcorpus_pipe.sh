@@ -1,8 +1,8 @@
-CONFIG=/media/code/FlagEmbedding/FlagEmbedding/baai_general_embedding/pipeline/default_config.yaml
-DEDUP=false
-MINING=false
-FINETUNE=false
-EVALUATE=false
+CONFIG=/media/code/FlagEmbedding/FlagEmbedding/baai_general_embedding/pipeline/configs/nfcorpus_config.yaml
+DEDUP=true
+MINING=true
+FINETUNE=true
+EVALUATE=true
 GATHER=true
 
 if $DEDUP; then

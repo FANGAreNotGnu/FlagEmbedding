@@ -236,8 +236,8 @@ def run_evaluations(config, eval_modes):
         elif eval_mode[:4] == "ckpt":
             ckpt_step = int(eval_mode[4:])
             encoder_names.append(get_model_ckpt(config, ckpt_step, return_path=True))
-        elif eval_mode == "finetune":
-            encoder_names += get_model_ckpt(config, ckpt_step, return_path=True)
+        elif eval_mode == "allckpts":
+            encoder_names += get_model_ckpt(config, eval_mode, return_path=True)
         else:
             raise ValueError(f"Invalid eval_mode: {eval_mode}")
     #TODO
