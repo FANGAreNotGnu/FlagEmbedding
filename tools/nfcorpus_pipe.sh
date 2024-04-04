@@ -4,6 +4,7 @@ MINING=true
 FINETUNE=true
 EVALUATE=true
 GATHER=true
+EPOCHS=( 15 25 50 100 150 200 )
 
 if $DEDUP; then
     python -m FlagEmbedding.baai_general_embedding.pipeline.dedup \
@@ -16,17 +17,26 @@ if $MINING; then
 fi
 
 if $FINETUNE; then
-    torchrun --nproc_per_node 8 \
-    -m  FlagEmbedding.baai_general_embedding.pipeline.finetune \
-        --cfg $CONFIG
+    for epochs in ${EPOCHS[*]} 
+    do
+        torchrun --nproc_per_node 8 \
+            -m  FlagEmbedding.baai_general_embedding.pipeline.finetune \
+            --cfg $CONFIG \
+            --epochs $epochs
+    done
 fi
 
 if $EVALUATE; then
-    python -m FlagEmbedding.baai_general_embedding.pipeline.evaluate \
-        --cfg $CONFIG
+    for epochs in ${EPOCHS[*]} 
+    do       
+        python -m FlagEmbedding.baai_general_embedding.pipeline.evaluate \
+            --cfg $CONFIG \
+            --epochs $epochs
+    done
 fi
 
 if $GATHER; then
-    python -m FlagEmbedding.baai_general_embedding.pipeline.gather_results \
-        --cfg $CONFIG
+    python -m FlagEmbedding.baai_general_embedding.pipeline.gather_epoch_results \
+        --cfg $CONFIG \
+        --epochs ${EPOCHS[*]} 
 fi

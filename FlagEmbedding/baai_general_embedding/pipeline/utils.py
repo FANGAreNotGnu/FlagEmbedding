@@ -127,7 +127,7 @@ def get_result_path(encoder_name, config):
 
 def save_config(config, save_path=None):
     if save_path is None:
-        save_path = os.papth.join(get_model_save_path(config), "rag_config.yaml")
+        save_path = os.path.join(get_model_save_path(config), "rag_config.yaml")
 
     print(f"Saving RAG config file at {save_path}...")
     OmegaConf.save(config, save_path)

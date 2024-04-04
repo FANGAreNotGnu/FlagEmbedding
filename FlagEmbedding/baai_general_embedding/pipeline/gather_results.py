@@ -20,14 +20,14 @@ def gather_result(config):
     sorted_idx = np.argsort(ckpt_iters)
 
     # pretrain result
-    result_path = get_result_path(config.pretrain.model, config)
-    metrics = load_json(result_path)
-    print(f"Pretraining result: {metrics[metric_name]}")
+    #result_path = get_result_path(config.pretrain.model, config)
+    #metrics = load_json(result_path)
+    #print(f"Pretraining result: {metrics[metric_name]}")
 
     # finetune result
-    result_path = get_result_path(get_model_save_path(config), config)
-    metrics = load_json(result_path)
-    print(f"Finetuned result: {metrics[metric_name]}")
+    #result_path = get_result_path(get_model_save_path(config), config)
+    #metrics = load_json(result_path)
+    #print(f"Finetuned result: {metrics[metric_name]}")
 
     # allckpts result
     for i in sorted_idx:

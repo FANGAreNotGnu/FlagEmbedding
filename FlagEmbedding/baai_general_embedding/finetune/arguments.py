@@ -26,6 +26,10 @@ class ModelArguments:
     cfg: Optional[str] = field(
         default=None, metadata={"help": "experiment config"}
     )
+    epochs: Optional[int] = field(
+        default=None, metadata={"help": "overwrite epochs"}
+    )
+
 
 
 

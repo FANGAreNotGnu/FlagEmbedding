@@ -22,7 +22,7 @@ dedup:
 # Negative Mining
 mining:
   model: null  # used in hard negative mining, if null, use backbone
-  mode: "easy"  # easy: random sample, hard: select hard negative
+  mode: "hard"  # easy: random sample, hard: select hard negative
   range_for_sampling: "100-1100"  # used in hard negative mining
   negative_number: 500  # number of negative samples
 
@@ -71,4 +71,4 @@ evaluate:
   save_embedding: False
   load_embedding: False
   bs_multiplier: 16
-  main_metric: "NDCG@10"
+  main_metric: "NDCG@10@10"

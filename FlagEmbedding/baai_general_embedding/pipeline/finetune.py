@@ -26,6 +26,8 @@ def finetune():
     training_args: TrainingArguments
 
     config = load_config(model_args.cfg)
+    if model_args.epochs is not None:
+        config.optimization.num_train_epochs = model_args.epochs
 
     seed_everything(config)
 
@@ -149,7 +151,7 @@ def finetune():
     if trainer.is_world_process_zero():
         tokenizer.save_pretrained(training_args.output_dir)
 
-    # save config
+    # save config TODO: save only when global_rank==0
     save_config(config)
 
 
