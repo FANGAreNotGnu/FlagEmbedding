@@ -26,8 +26,8 @@ def finetune():
     training_args: TrainingArguments
 
     config = load_config(model_args.cfg)
-    if model_args.epochs is not None:
-        config.optimization.num_train_epochs = model_args.epochs
+    if model_args.steps is not None:
+        config.optimization.max_steps = model_args.steps
 
     seed_everything(config)
 
@@ -37,6 +37,7 @@ def finetune():
     training_args.output_dir = output_dir
     training_args.learning_rate = config.optimization.learning_rate
     training_args.num_train_epochs = config.optimization.num_train_epochs
+    training_args.max_steps = config.optimization.max_steps
     training_args.per_device_train_batch_size = config.optimization.per_device_train_batch_size
     training_args.max_grad_norm = config.optimization.max_grad_norm
     training_args.save_steps = config.optimization.save_steps

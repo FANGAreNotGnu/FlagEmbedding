@@ -26,11 +26,9 @@ class ModelArguments:
     cfg: Optional[str] = field(
         default=None, metadata={"help": "experiment config"}
     )
-    epochs: Optional[int] = field(
-        default=None, metadata={"help": "overwrite epochs"}
+    steps: Optional[int] = field(
+        default=None, metadata={"help": "overwrite max_steps"}
     )
-
-
 
 
 @dataclass
@@ -67,9 +65,9 @@ class DataArguments:
         default=None, metadata={"help": "instruction for passage"}
     )
 
-    def __post_init__(self):
-        if not os.path.exists(self.train_data):
-            print(f"cannot find file: {self.train_data}, please set a true path")
+    #def __post_init__(self):
+    #    if not os.path.exists(self.train_data):
+    #        print(f"cannot find file: {self.train_data}, please set a true path")
 
 @dataclass
 class RetrieverTrainingArguments(TrainingArguments):

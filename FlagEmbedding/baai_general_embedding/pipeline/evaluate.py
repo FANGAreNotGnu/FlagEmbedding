@@ -254,11 +254,11 @@ def run_evaluations(config, eval_modes):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--cfg', type=str)
-    parser.add_argument('--epochs', default=None, type=int)
+    parser.add_argument('--steps', default=None, type=int)
     args = parser.parse_args()
     config = load_config(args.cfg)
-    if args.epochs is not None:
-        config.optimization.num_train_epochs = args.epochs
+    if args.steps is not None:
+        config.optimization.max_steps = args.steps
 
     seed_everything(config)
 

@@ -1,10 +1,11 @@
 CONFIG=/media/code/FlagEmbedding/FlagEmbedding/baai_general_embedding/pipeline/configs/nfcorpus_config.yaml
-DEDUP=true
-MINING=true
+DEDUP=false
+MINING=false
 FINETUNE=true
 EVALUATE=true
 GATHER=true
-EPOCHS=( 15 25 50 100 150 200 )
+STEPS=( 128 256 512 1024 2048 4096 8192 )
+#STEPS=( 128 )
 
 if $DEDUP; then
     python -m FlagEmbedding.baai_general_embedding.pipeline.dedup \
@@ -17,26 +18,26 @@ if $MINING; then
 fi
 
 if $FINETUNE; then
-    for epochs in ${EPOCHS[*]} 
+    for steps in ${STEPS[*]} 
     do
         torchrun --nproc_per_node 8 \
             -m  FlagEmbedding.baai_general_embedding.pipeline.finetune \
             --cfg $CONFIG \
-            --epochs $epochs
+            --steps $steps
     done
 fi
 
 if $EVALUATE; then
-    for epochs in ${EPOCHS[*]} 
+    for steps in ${STEPS[*]} 
     do       
         python -m FlagEmbedding.baai_general_embedding.pipeline.evaluate \
             --cfg $CONFIG \
-            --epochs $epochs
+            --steps $steps
     done
 fi
 
 if $GATHER; then
-    python -m FlagEmbedding.baai_general_embedding.pipeline.gather_epoch_results \
+    python -m FlagEmbedding.baai_general_embedding.pipeline.gather_step_results \
         --cfg $CONFIG \
-        --epochs ${EPOCHS[*]} 
+        --steps ${STEPS[*]} 
 fi

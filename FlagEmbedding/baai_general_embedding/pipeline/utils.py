@@ -99,8 +99,13 @@ def get_mined_dataset(config, return_path=True, return_dir=False):
 
 def get_model_save_path(config, return_path=True):
     model_save_name = get_mined_dataset(config, return_path=False)
-    model_save_name += f"-{config.optimization.learning_rate}_{config.optimization.num_train_epochs}e"
-    model_save_name += f"-{config.optimization.temperature}T_{config.optimization.weight_decay}wd"
+    model_save_name += f"-{config.optimization.learning_rate}_{config.optimization.temperature}T_{config.optimization.weight_decay}wd"
+
+    if config.optimization.max_steps > 0:
+        model_save_name += f"_{config.optimization.max_steps}it"
+    else:
+        assert config.optimization.num_train_epochs > 0
+        model_save_name += f"_{config.optimization.num_train_epochs}e"
     if return_path:
         return f"{CKPT_ROOT}/{model_save_name}"
     else:
