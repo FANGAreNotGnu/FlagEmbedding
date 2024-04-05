@@ -64,7 +64,8 @@ def finetune():
     data_args.query_max_len = config.data.query_max_len
     data_args.passage_max_len = config.data.passage_max_len
     data_args.max_example_num_per_dataset = config.data.max_example_num_per_dataset
-    data_args.query_instruction_for_retrieval = config.data.query_instruction_for_retrieval
+    #data_args.query_instruction_for_retrieval = config.data.query_instruction_for_retrieval
+    data_args.query_instruction_for_retrieval = ""  # instruction is only used in evaluation
     data_args.passage_instruction_for_retrieval = config.data.passage_instruction_for_retrieval
     # model_args
     model_args.model_name_or_path = config.pretrain.model
