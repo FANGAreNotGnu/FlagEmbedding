@@ -22,5 +22,6 @@ setup(
         'faiss-gpu==1.7.2',
         'sentencepiece==0.2.0',
         'protobuf==4.25.3',
+        'omegaconf==2.3.0',
     ],
 )
