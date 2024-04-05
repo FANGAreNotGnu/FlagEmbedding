@@ -1,9 +1,18 @@
 CONFIG=/media/code/FlagEmbedding/FlagEmbedding/baai_general_embedding/pipeline/configs/tripclick_head_config.yaml
+PREPARE=true
 DEDUP=false
 MINING=false
-FINETUNE=true
-EVALUATE=true
-GATHER=true
+FINETUNE=false
+EVALUATE=false
+GATHER=false
+STEPS=( 100 200 400 600 800 1000 )
+#STEPS=( 128 )
+
+if $PREPARE; then
+    python -m FlagEmbedding.baai_general_embedding.pipeline.prepare_ir \
+        --cfg $CONFIG
+fi
+
 
 if $DEDUP; then
     python -m FlagEmbedding.baai_general_embedding.pipeline.dedup \
@@ -16,17 +25,26 @@ if $MINING; then
 fi
 
 if $FINETUNE; then
-    torchrun --nproc_per_node 8 \
-    -m  FlagEmbedding.baai_general_embedding.pipeline.finetune \
-        --cfg $CONFIG
+    for steps in ${STEPS[*]} 
+    do
+        torchrun --nproc_per_node 8 \
+            -m  FlagEmbedding.baai_general_embedding.pipeline.finetune \
+            --cfg $CONFIG \
+            --steps $steps
+    done
 fi
 
 if $EVALUATE; then
-    python -m FlagEmbedding.baai_general_embedding.pipeline.evaluate \
-        --cfg $CONFIG
+    for steps in ${STEPS[*]} 
+    do       
+        python -m FlagEmbedding.baai_general_embedding.pipeline.evaluate \
+            --cfg $CONFIG \
+            --steps $steps
+    done
 fi
 
 if $GATHER; then
-    python -m FlagEmbedding.baai_general_embedding.pipeline.gather_results \
-        --cfg $CONFIG
+    python -m FlagEmbedding.baai_general_embedding.pipeline.gather_step_results \
+        --cfg $CONFIG \
+        --steps ${STEPS[*]} 
 fi
