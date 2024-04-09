@@ -5,7 +5,6 @@ FINETUNE=true
 EVALUATE=true
 GATHER=true
 STEPS=( 1000 2000 3000 4000 5000 6000 7000 8000 16000 32000 )
-#STEPS=( 128 )
 
 if $DEDUP; then
     python -m FlagEmbedding.baai_general_embedding.pipeline.dedup \
