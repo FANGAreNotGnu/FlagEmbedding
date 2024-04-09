@@ -1,10 +1,10 @@
 CONFIG=/media/code/FlagEmbedding/FlagEmbedding/baai_general_embedding/pipeline/configs/tripclick_head_config.yaml
-PREPARE=true
-DEDUP=false
-MINING=false
-FINETUNE=false
-EVALUATE=false
-GATHER=false
+PREPARE=false
+DEDUP=true
+MINING=true
+FINETUNE=true
+EVALUATE=true
+GATHER=true
 STEPS=( 100 200 400 600 800 1000 )
 #STEPS=( 128 )
 
