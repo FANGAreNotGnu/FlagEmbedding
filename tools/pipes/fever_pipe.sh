@@ -1,11 +1,11 @@
-CONFIG=/media/code/FlagEmbedding/FlagEmbedding/baai_general_embedding/pipeline/configs/tripclick_head_config.yaml
-PREPARE=true
-DEDUP=false
-MINING=false
-FINETUNE=false
-EVALUATE=false
-GATHER=false
-STEPS=( 100 200 400 600 800 1000 )
+CONFIG=/media/code/FlagEmbedding/FlagEmbedding/baai_general_embedding/pipeline/configs/fever_config.yaml
+PREPARE=false
+DEDUP=true
+MINING=true
+FINETUNE=true
+EVALUATE=true
+GATHER=true
+STEPS=( 1000 2000 4000 6000 8000 16000 )
 #STEPS=( 128 )
 
 if $PREPARE; then

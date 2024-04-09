@@ -1,11 +1,10 @@
 CONFIG=/media/code/FlagEmbedding/FlagEmbedding/baai_general_embedding/pipeline/configs/nfcorpus_config.yaml
-DEDUP=false
-MINING=false
+DEDUP=true
+MINING=true
 FINETUNE=true
 EVALUATE=true
 GATHER=true
-STEPS=( 128 256 512 1024 2048 4096 8192 )
-#STEPS=( 128 )
+STEPS=( 1000 2000 3000 4000 5000 6000 7000 8000 16000 32000 )
 
 if $DEDUP; then
     python -m FlagEmbedding.baai_general_embedding.pipeline.dedup \
