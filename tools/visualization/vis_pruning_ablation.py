@@ -29,4 +29,4 @@ plt.xlabel("#iterations")
 plt.ylabel("NDCG@10")
 plt.legend(loc="best")
 
-plt.savefig('/media/code/FlagEmbedding/tools/vis_pruning_ablation.png')
+plt.savefig('/media/code/FlagEmbedding/tools/visualization/vis_pruning_ablation.png')

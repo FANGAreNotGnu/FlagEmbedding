@@ -1,12 +1,12 @@
 CONFIG=/media/code/FlagEmbedding/FlagEmbedding/baai_general_embedding/pipeline/configs/fever_config.yaml
 PREPARE=false
-DEDUP=true
-MINING=true
+DEDUP=false
+MINING=false
 FINETUNE=true
 EVALUATE=true
 GATHER=true
-STEPS=( 1000 2000 4000 6000 8000 16000 )
-#STEPS=( 128 )
+#STEPS=( 1000 2000 4000 6000 8000 16000 )
+STEPS=( 32000 )
 
 if $PREPARE; then
     python -m FlagEmbedding.baai_general_embedding.pipeline.prepare_ir \
