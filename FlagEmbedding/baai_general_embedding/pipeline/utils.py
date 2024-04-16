@@ -60,6 +60,7 @@ def get_deduplicated_dataset(config, return_path=True):
     model_name = config.dedup.model if config.dedup.model is not None else config.pretrain.model
     dedup_name += model_name.replace('/', '_')
     dedup_name += f"_kept{config.dedup.kept_pct}_{config.dedup.mode}"
+    dedup_name += f"_q{config.dedup.two_step.query_threshold}_d{config.dedup.two_step.doc_threshold}"
 
     if not return_path:
         return dedup_name

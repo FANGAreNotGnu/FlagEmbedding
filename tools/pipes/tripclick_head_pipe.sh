@@ -5,8 +5,8 @@ MINING=true
 FINETUNE=true
 EVALUATE=true
 GATHER=true
+#STEPS=( 100 200 400 600 800 1000 )
 STEPS=( 100 200 400 600 800 1000 )
-#STEPS=( 128 )
 
 if $PREPARE; then
     python -m FlagEmbedding.baai_general_embedding.pipeline.prepare_ir \

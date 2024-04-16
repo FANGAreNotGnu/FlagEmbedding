@@ -16,8 +16,11 @@ pretrain:
 # Deduplication
 dedup:
   model: null  # if null, use backbone
-  kept_pct: 0.1  # percentage of data to be kept
+  kept_pct: 1  # percentage of data to be kept
   mode: "ran"  # ep: remove easy positve, ran: remove random positive
+  two_step:
+    query_threshold: 0.95
+    doc_threshold: 0.95
 
 # Negative Mining
 mining:
