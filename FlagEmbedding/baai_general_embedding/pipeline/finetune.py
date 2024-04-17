@@ -12,6 +12,7 @@ from FlagEmbedding.baai_general_embedding.finetune.arguments import ModelArgumen
     RetrieverTrainingArguments as TrainingArguments
 from FlagEmbedding.baai_general_embedding.finetune.data import TrainDatasetForEmbedding, EmbedCollator
 from FlagEmbedding.baai_general_embedding.finetune.modeling import BiEncoderModel
+from FlagEmbedding.baai_general_embedding.finetune.soft_modeling import SoftBiEncoderModel
 from FlagEmbedding.baai_general_embedding.finetune.trainer import BiTrainer
 from FlagEmbedding.baai_general_embedding.pipeline.utils import get_model_save_path, load_config, get_mined_dataset, seed_everything, save_config
 
@@ -115,13 +116,17 @@ def finetune():
     )
     logger.info('Model Config: %s', model_config)
 
-    model = BiEncoderModel(model_name=model_args.model_name_or_path,
-                           normlized=training_args.normlized,
-                           sentence_pooling_method=training_args.sentence_pooling_method,
-                           negatives_cross_device=training_args.negatives_cross_device,
-                           temperature=training_args.temperature,
-                           use_inbatch_neg=training_args.use_inbatch_neg,
-                           )
+    #model = BiEncoderModel(
+    model = SoftBiEncoderModel(
+        model_name=model_args.model_name_or_path,
+        normlized=training_args.normlized,
+        sentence_pooling_method=training_args.sentence_pooling_method,
+        negatives_cross_device=training_args.negatives_cross_device,
+        temperature=training_args.temperature,
+        use_inbatch_neg=training_args.use_inbatch_neg,
+        soft_prune_ratio = config.optimization.inbatch_prune.soft_prune_ratio,  # if it's 0.25, the lowest 25% loss will be truncated with a probability
+        soft_prune_prob = config.optimization.inbatch_prune.soft_prune_prob,  # if it's 0.25, only 25% of the data below threshold will be truncated
+    )
 
     if training_args.fix_position_embedding:
         for k, v in model.named_parameters():
