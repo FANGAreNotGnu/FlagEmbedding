@@ -16,11 +16,11 @@ pretrain:
 # Deduplication
 dedup:
   model: null  # if null, use backbone
-  kept_pct: 1  # percentage of data to be kept
-  mode: "ran"  # ep: remove easy positve, ran: remove random positive
+  kept_pct: 0.25  # percentage of data to be kept
+  mode: "ep"  # ep: remove easy positve, ran: remove random positive, hp: remove hard negative
   two_step:
-    query_threshold: 0.95
-    doc_threshold: 0.95
+    query_threshold: 1
+    doc_threshold: 1
 
 # Negative Mining
 mining:
@@ -53,6 +53,10 @@ optimization:
   sentence_pooling_method: "cls"
   normlized: True
   use_inbatch_neg: True
+
+  inbatch_prune:
+    soft_prune_ratio: 0.4
+    soft_prune_prob: 0.6
 
 # Test
 evaluate:
