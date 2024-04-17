@@ -28,7 +28,9 @@ def remove_easy_positive(pairs, model, kept_pct, remove_hard=False):
     #    embeddings_2 = model.encode(pair["doc"])
     #    score = embeddings_1 @ embeddings_2.T
     #    scores.append(score.item())
-    if not remove_hard:
+    if remove_hard:
+        top_indices = np.argsort(scores)  # for scarce data we might need to keep easy positives
+    else:
         top_indices = np.argsort(scores)[::-1]  # by default, keep the hard positive (pairs with larger distance)
     kept_number = int(len(scores)*kept_pct)
 
