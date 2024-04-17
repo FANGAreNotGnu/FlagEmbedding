@@ -65,14 +65,14 @@ class SoftBiEncoderModel(BiEncoderModel):
         )
 
     def prune_loss(self, loss):
+        assert loss.dim() == 1
         N = len(loss)
-        #print(loss)
-        #print(N)
         mask = loss.clone().detach()
         thres = torch.quantile(mask, self.soft_prune_ratio)  # TODO
-        mask = mask >= thres
+        mask = mask >= thres  # only large loss gets backproped
 
-        prob_mask = torch.rand(mask.shape, device=mask.device) < self.soft_prune_prob  # 
-
+        prob_mask = torch.rand(mask.shape, device=mask.device) > self.soft_prune_prob  # if soft_prune_prob=0.25, 25% of the sample below threshold will be pruned (prob_mask = 0), else gets backproped
+        mask = torch.logical_or(mask, prob_mask)
+        
         loss = torch.sum(mask * loss) / (N * (1- self.soft_prune_ratio))
         return loss
