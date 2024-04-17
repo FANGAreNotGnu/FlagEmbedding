@@ -9,7 +9,7 @@ from FlagEmbedding.baai_general_embedding.pipeline.utils import load_config, loa
 
 
 # pairwise
-def remove_easy_positive(pairs, model, kept_pct):
+def remove_easy_positive(pairs, model, kept_pct, remove_hard=False):
     """
     pairs: [{"query":<query>,"doc":<doc>}, ...]
     kept_pct: kept percentage
@@ -28,7 +28,10 @@ def remove_easy_positive(pairs, model, kept_pct):
     #    embeddings_2 = model.encode(pair["doc"])
     #    score = embeddings_1 @ embeddings_2.T
     #    scores.append(score.item())
-    top_indices = np.argsort(scores)[::-1]  # keep the hard positive (pairs with larger distance)
+    if remove_hard:
+        top_indices = np.argsort(scores)  # for scarce data we might need to keep easy positives
+    else:
+        top_indices = np.argsort(scores)[::-1]  # by default, keep the hard positive (pairs with larger distance)
     kept_number = int(len(scores)*kept_pct)
 
     kept_pairs = [pairs[i] for i in top_indices[:kept_number]]
@@ -171,6 +174,8 @@ def deduplicate_pairs(input_file, output_file, kept_pct, model, query_threshold,
 
     if dedup_mode == "ep":
         kept_pairs = remove_easy_positive(pairs=pairs, model=model, kept_pct=kept_pct)
+    elif dedup_mode == "hp":
+        kept_pairs = remove_easy_positive(pairs=pairs, model=model, kept_pct=kept_pct, remove_hard=True)
     elif dedup_mode == "ran":
         kept_pairs = remove_random(pairs=pairs, kept_pct=kept_pct)
     else:
