@@ -180,8 +180,9 @@ def deduplicate_pairs(input_file, output_file, kept_pct, model, query_threshold,
         kept_pairs = remove_random(pairs=pairs, kept_pct=kept_pct)
     else:
         raise ValueError(f"dedup_mode is not supported: {dedup_mode}")
-        
-    kept_pairs = two_step_dedup(kept_pairs, model, query_threshold, doc_threshold)
+    
+    if query_threshold < 1 and doc_threshold < 1:
+        kept_pairs = two_step_dedup(kept_pairs, model, query_threshold, doc_threshold)
 
     save_positive_pairs(kept_pairs, output_file)
     print(f"dedup {len(kept_pairs)} out of {len(pairs)} pairs from {input_file} to {output_file}")
