@@ -38,14 +38,21 @@ class SoftBiEncoderModel(BiEncoderModel):
             if self.negatives_cross_device and self.use_inbatch_neg:
                 q_reps = self._dist_gather_tensor(q_reps)
                 p_reps = self._dist_gather_tensor(p_reps)
+                #print(f"q_reps: {q_reps.shape}")  # [64, 1024]
+                #print(f"p_reps: {p_reps.shape}")  # [128, 1024]
 
             group_size = p_reps.size(0) // q_reps.size(0)
+            #print(f"group_size: {group_size}")  # 2
             if self.use_inbatch_neg:
                 scores = self.compute_similarity(q_reps, p_reps) / self.temperature # B B*G
+                #print(f"scores1: {scores.shape}")  # [64, 128]
                 scores = scores.view(q_reps.size(0), -1)
+                #print(f"scores2: {scores.shape}")  # [64, 128]
 
                 target = torch.arange(scores.size(0), device=scores.device, dtype=torch.long)
                 target = target * group_size
+                #print(f"target: {target.shape}")  # [64]
+                #print(target)  # [0, 2, 4, 6, 8, ..., 126]
             else:
                 scores = self.compute_similarity(q_reps[:, None, :,], p_reps.view(q_reps.size(0), group_size, -1)).squeeze(1) / self.temperature # B G
 
@@ -68,11 +75,11 @@ class SoftBiEncoderModel(BiEncoderModel):
         assert loss.dim() == 1
         N = len(loss)
         mask = loss.clone().detach()
-        thres = torch.quantile(mask, self.soft_prune_ratio)  # TODO
+        thres = torch.quantile(mask, self.soft_prune_ratio)  # if soft_prune_ratio=0.25, 25% of the sample will be below threshold
         mask = mask >= thres  # only large loss gets backproped
 
         prob_mask = torch.rand(mask.shape, device=mask.device) > self.soft_prune_prob  # if soft_prune_prob=0.25, 25% of the sample below threshold will be pruned (prob_mask = 0), else gets backproped
         mask = torch.logical_or(mask, prob_mask)
-        
-        loss = torch.sum(mask * loss) / (N * (1- self.soft_prune_ratio))
+
+        loss = torch.sum(mask * loss) / torch.sum(mask)
         return loss
