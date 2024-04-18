@@ -59,7 +59,7 @@ class SoftBiEncoderModel(BiEncoderModel):
                 scores = scores.view(q_reps.size(0), -1)
                 target = torch.zeros(scores.size(0), device=scores.device, dtype=torch.long)
             loss = self.compute_loss(scores, target)
-            loss = self.prune_loss(loss)
+            loss = self.prune_loss(loss, scores)
 
         else:
             scores = self.compute_similarity(q_reps, p_reps)
@@ -71,12 +71,14 @@ class SoftBiEncoderModel(BiEncoderModel):
             p_reps=p_reps,
         )
 
-    def prune_loss(self, loss):
-        assert loss.dim() == 1
-        N = len(loss)
-        mask = loss.clone().detach()
-        thres = torch.quantile(mask, self.soft_prune_ratio)  # if soft_prune_ratio=0.25, 25% of the sample will be below threshold
-        mask = mask >= thres  # only large loss gets backproped
+    def prune_loss(self, loss, scores):
+        N = scores.size(0)  # [64, 128]
+        indices = torch.arange(N, device=scores.device, dtype=torch.long)  # [64]
+        positive_scores = scores[indices, indices*2].clone().detach()  # 64
+        assert positive_scores.dim() == 1
+
+        thres = torch.quantile(positive_scores, 1 - self.soft_prune_ratio)  # if soft_prune_ratio=0.25, 25% of the sample will be below threshold
+        mask = positive_scores <= thres  # only large loss gets backproped
 
         prob_mask = torch.rand(mask.shape, device=mask.device) > self.soft_prune_prob  # if soft_prune_prob=0.25, 25% of the sample below threshold will be pruned (prob_mask = 0), else gets backproped
         mask = torch.logical_or(mask, prob_mask)
