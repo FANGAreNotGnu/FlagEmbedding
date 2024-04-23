@@ -10,9 +10,9 @@ from transformers import (
 
 from FlagEmbedding.baai_general_embedding.finetune.arguments import ModelArguments, DataArguments, \
     RetrieverTrainingArguments as TrainingArguments
-from FlagEmbedding.baai_general_embedding.finetune.soft_data import SoftPrunedTrainDatasetForEmbedding, SoftEmbedCollator
-from FlagEmbedding.baai_general_embedding.finetune.modeling import BiEncoderModel
-from FlagEmbedding.baai_general_embedding.finetune.soft_trainer import SoftBiTrainer
+from FlagEmbedding.baai_general_embedding.finetune.infobatch.ib_data import InfoBatchTrainDatasetForEmbedding, InfoBatchEmbedCollator
+from FlagEmbedding.baai_general_embedding.finetune.infobatch.ib_modeling import InfobatchBiEncoderModel
+from FlagEmbedding.baai_general_embedding.finetune.infobatch.ib_trainer import InfoBatchBiTrainer
 from FlagEmbedding.baai_general_embedding.pipeline.utils import get_model_save_path, load_config, get_mined_dataset, seed_everything, save_config
 
 logger = logging.getLogger(__name__)
@@ -115,16 +115,13 @@ def finetune():
     )
     logger.info('Model Config: %s', model_config)
 
-    model = BiEncoderModel(
-    #model = SoftBiEncoderModel(
+    model = InfobatchBiEncoderModel(
         model_name=model_args.model_name_or_path,
         normlized=training_args.normlized,
         sentence_pooling_method=training_args.sentence_pooling_method,
         negatives_cross_device=training_args.negatives_cross_device,
         temperature=training_args.temperature,
         use_inbatch_neg=training_args.use_inbatch_neg,
-        #soft_prune_ratio = config.optimization.inbatch_prune.soft_prune_ratio,  # if it's 0.25, the lowest 25% loss will be truncated with a probability
-        #soft_prune_prob = config.optimization.inbatch_prune.soft_prune_prob,  # if it's 0.25, only 25% of the data below threshold will be truncated
     )
 
     if training_args.fix_position_embedding:
@@ -133,7 +130,7 @@ def finetune():
                 logging.info(f"Freeze the parameters for {k}")
                 v.requires_grad = False
 
-    train_dataset = SoftPrunedTrainDatasetForEmbedding(
+    train_dataset = InfoBatchTrainDatasetForEmbedding(
         args=data_args, 
         tokenizer=tokenizer,
         max_steps=config.optimization.max_steps,
@@ -141,11 +138,11 @@ def finetune():
         delta=0.875,
     )
 
-    trainer = SoftBiTrainer(
+    trainer = InfoBatchBiTrainer(
         model=model,
         args=training_args,
         train_dataset=train_dataset,
-        data_collator=SoftEmbedCollator(
+        data_collator=InfoBatchEmbedCollator(
             tokenizer,
             query_max_len=data_args.query_max_len,
             passage_max_len=data_args.passage_max_len

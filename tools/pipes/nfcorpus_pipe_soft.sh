@@ -5,7 +5,7 @@ FINETUNE=true
 EVALUATE=true
 GATHER=true
 #STEPS=( 1000 2000 3000 4000 5000 6000 7000 8000 16000 32000 )
-STEPS=( 1000 2000 3000 4000 5000 6000 7000 8000 )
+STEPS=( 2000 4000 )
 
 if $DEDUP; then
     python -m FlagEmbedding.baai_general_embedding.pipeline.dedup \
@@ -21,7 +21,7 @@ if $FINETUNE; then
     for steps in ${STEPS[*]} 
     do
         torchrun --nproc_per_node 8 \
-            -m  FlagEmbedding.baai_general_embedding.pipeline.soft_finetune \
+            -m  FlagEmbedding.baai_general_embedding.pipeline.ib_finetune \
             --cfg $CONFIG \
             --steps $steps
     done

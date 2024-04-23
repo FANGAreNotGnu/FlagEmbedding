@@ -6,6 +6,9 @@ from torch import nn, Tensor
 from .modeling import BiEncoderModel, EncoderOutput
 
 
+# DEPRECATED
+
+
 class SoftBiEncoderModel(BiEncoderModel):
     def __init__(
             self,

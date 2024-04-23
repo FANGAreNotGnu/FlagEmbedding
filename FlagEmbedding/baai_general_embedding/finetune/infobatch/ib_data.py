@@ -16,10 +16,10 @@ import datasets
 from torch.utils.data import Dataset
 from transformers import DataCollatorWithPadding, PreTrainedTokenizer
 
-from .arguments import DataArguments
+from ..arguments import DataArguments
 
 
-__all__ = ['SoftPrunedTrainDatasetForEmbedding']
+__all__ = ['InfoBatchTrainDatasetForEmbedding']
 
 
 def info_hack_indices(self):
@@ -27,7 +27,7 @@ def info_hack_indices(self):
         if self._sampler_iter is None:
             # TODO(https://github.com/pytorch/pytorch/issues/76750)
             self._reset()  # type: ignore[call-arg]
-        if isinstance(self._dataset, SoftPrunedTrainDatasetForEmbedding):
+        if isinstance(self._dataset, InfoBatchTrainDatasetForEmbedding):
             data, indices = self._next_data()
         else:
             data = self._next_data()
@@ -43,8 +43,6 @@ def info_hack_indices(self):
                                 "IterableDataset replica at each worker. Please see "
                                 "https://pytorch.org/docs/stable/data.html#torch.utils.data.IterableDataset for examples.")
             warnings.warn(warn_msg)
-        if isinstance(self._dataset, SoftPrunedTrainDatasetForEmbedding):
-            self._dataset.set_active_indices(indices)
         return data
 
 
@@ -64,7 +62,7 @@ def concat_all_gather(tensor, dim=0):
     return output
 
 
-class SoftPrunedTrainDatasetForEmbedding(Dataset):
+class InfoBatchTrainDatasetForEmbedding(Dataset):
     def __init__(
             self,
             args: DataArguments,
@@ -103,33 +101,31 @@ class SoftPrunedTrainDatasetForEmbedding(Dataset):
         #else:
         #    self.similarity = np.ones([len(self.dataset)]) * 2
         #assert len(self.similarity) == len(self.dataset)
-        self.scores = np.ones([len(self.dataset)]) * 3  # similarity means the similarity of postive pairs, while scores is the cross entropy loss
+        self.scores = torch.ones([len(self.dataset)]) * 3  # similarity means the similarity of postive pairs, while scores is the cross entropy loss
         #self.transform = self.dataset.transform
-        self.weights = np.ones(len(self.dataset))
+        self.weights = torch.ones(len(self.dataset))
         #self.save_num = 0
 
         self.num_pruned_samples = 0
-        self.cur_batch_index = None
 
-    def set_active_indices(self, cur_batch_indices: torch.Tensor):
-        self.cur_batch_index = cur_batch_indices
+        self.device = None
 
-    def update(self, values):
+    def update(self, values, query_indices):
+        #print(query_indices)
+        #query_indices = query_indices.cpu()
+        if self.device is None:
+            self.device = values.device
+            self.weights = self.weights.to(self.device)
+        else:
+            assert self.device == values.device, f"{self.device} and {values.device} mismatch."
+
         assert isinstance(values, torch.Tensor)
         batch_size = values.shape[0]
-        assert len(self.cur_batch_index) == batch_size, 'not enough index'
-        device = values.device
-        weights = self.weights[self.cur_batch_index].to(device)
-        indices = self.cur_batch_index.to(device)
-        loss_val = values.detach().clone()
-        self.cur_batch_index = []
+        assert len(query_indices) == batch_size, 'not enough index'
+        weights = self.weights[query_indices].to(values.device)
+        loss_val = values.detach().clone().cpu()
 
-        if dist.is_available() and dist.is_initialized():
-            iv = torch.cat([indices.view(1, -1), loss_val.view(1, -1)], dim=0)
-            iv_whole_group = concat_all_gather(iv, 1)
-            indices = iv_whole_group[0]
-            loss_val = iv_whole_group[1]
-        self.scores[indices.cpu().long()] = loss_val.cpu()
+        self.scores[query_indices.cpu()] = loss_val
         values.mul_(weights)
         return values.mean()
 
@@ -137,6 +133,10 @@ class SoftPrunedTrainDatasetForEmbedding(Dataset):
         return len(self.dataset)
 
     def __getitem__(self, item) -> Tuple[str, List[str]]:
+        # np.int64 to int
+        if isinstance(item, np.int64):
+            item = item.item()
+
         query = self.dataset[item]['query']
         if self.args.query_instruction_for_retrieval is not None:
             query = self.args.query_instruction_for_retrieval + query
@@ -210,7 +210,7 @@ class SoftPrunedTrainDatasetForEmbedding(Dataset):
 
 
 class IBSampler(object):
-    def __init__(self, dataset: SoftPrunedTrainDatasetForEmbedding):
+    def __init__(self, dataset: InfoBatchTrainDatasetForEmbedding):
         self.dataset = dataset
         self.stop_prune = dataset.stop_prune
         self.iterations = 0
@@ -340,7 +340,7 @@ class DistributedIBSampler(DistributedSampler):
 
 
 @dataclass
-class SoftEmbedCollator(DataCollatorWithPadding):
+class InfoBatchEmbedCollator(DataCollatorWithPadding):
     """
     Wrapper that does conversion from List[Tuple[encode_qry, encode_psg]] to List[qry], List[psg]
     and pass batch separately to the actual collator.
@@ -391,4 +391,5 @@ class SoftEmbedCollator(DataCollatorWithPadding):
             max_length=self.passage_max_len,
             return_tensors="pt",
         )
-        return {"query": q_collated, "passage": d_collated}, index
+        idx_collated = torch.LongTensor(index)
+        return {"query": q_collated, "passage": d_collated, "query_indices": idx_collated}, index
