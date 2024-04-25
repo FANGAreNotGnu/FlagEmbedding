@@ -1,3 +1,5 @@
+import torch
+
 from sentence_transformers import SentenceTransformer, models
 from transformers.trainer import *
 
@@ -16,12 +18,16 @@ def save_ckpt_for_sentence_transformers(ckpt_dir, pooling_mode: str = 'cls', nor
 
 
 class InfoBatchBiTrainer(BiTrainer):
+    def __init__(self, *args, use_similarity=False, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.use_similarity = use_similarity
+
     def _get_train_sampler(self):
         if self.train_dataset is None or not len(self.train_dataset):
             return None
         else:
             return self.train_dataset.sampler
-        
+
     def compute_loss(self, model, inputs, return_outputs=False):
         """
         How the loss is computed by Trainer. By default, all models return the loss in the first element.
@@ -34,7 +40,17 @@ class InfoBatchBiTrainer(BiTrainer):
         #print(f"query_indices shape: {query_indices.shape}")
         #print(f"loss shape: {loss}")
         query_indices = outputs.query_indices
-        loss = self.train_dataset.update(loss, query_indices)
-        #loss = loss.mean()
+        if self.use_similarity:
+            scores = outputs.scores
+            B, N = scores.shape
+            M = N//B
+            assert M * B == N, f"M {M}, B: {B}, N: {N}"
+            positive_scores = scores[torch.LongTensor(range(B)), torch.LongTensor(range(B))*M] * self.args.temperature
+            #print(scores[0])
+            #print(positive_scores)
+            self.train_dataset.update(positive_scores, query_indices, visualize=self.is_world_process_zero())
+            loss = loss.mean()
+        else:
+            loss = self.train_dataset.update(loss, query_indices, visualize=self.is_world_process_zero())
 
         return (loss, outputs) if return_outputs else loss

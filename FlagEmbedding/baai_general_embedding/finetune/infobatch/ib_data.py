@@ -72,6 +72,7 @@ class InfoBatchTrainDatasetForEmbedding(Dataset):
             #soft_prune_prob: float = 1,  # if it's 0.25, 25% samples below threshold will be pruned
             delta: float = 0.875,  # The first delta * max_steps the pruning process is conducted. It should be close to 1. Defaults to 0.875.
             #similarity: Optional[List] = None,  # precompute similarity scores
+            use_similarity: bool = True,
 
     ):
         if os.path.isdir(args.train_data):
@@ -101,16 +102,27 @@ class InfoBatchTrainDatasetForEmbedding(Dataset):
         #else:
         #    self.similarity = np.ones([len(self.dataset)]) * 2
         #assert len(self.similarity) == len(self.dataset)
-        self.scores = torch.ones([len(self.dataset)]) * 3  # similarity means the similarity of postive pairs, while scores is the cross entropy loss
+        self.scores = torch.ones([len(self.dataset)]) * 0.4
         #self.transform = self.dataset.transform
         self.weights = torch.ones(len(self.dataset))
         #self.save_num = 0
 
         self.num_pruned_samples = 0
 
-        self.device = None
+        self.update_counts = 0
 
-    def update(self, values, query_indices):
+        self.device = None
+        self.use_similarity = use_similarity
+
+        #self._init_pos_weights()  # TODO
+
+    def _init_pos_weights(self):
+        self.pos_weights = {}
+        for i in range(len(self)):
+            self.pos_weights = np.ones((1,1))  # TODO
+        raise NotImplementedError
+
+    def update(self, values, query_indices, visualize=False):
         #print(query_indices)
         #query_indices = query_indices.cpu()
         if self.device is None:
@@ -126,7 +138,13 @@ class InfoBatchTrainDatasetForEmbedding(Dataset):
         loss_val = values.detach().clone().cpu()
 
         self.scores[query_indices.cpu()] = loss_val
+
+        #if visualize and self.update_counts%10 == 0:
+        if visualize and self.update_counts%1 == 0:
+            torch.save(self.scores, f"/media/code/FlagEmbedding/visualization/nfcorpus_scores/scores/{self.update_counts}.pt")
+
         values.mul_(weights)
+        self.update_counts += 1
         return values.mean()
 
     def __len__(self):
@@ -162,7 +180,10 @@ class InfoBatchTrainDatasetForEmbedding(Dataset):
         # well learned samples' learning rate to keep estimation about the same
         # for the next version, also consider new class balance
 
-        well_learned_mask = self.scores < self.scores.mean()
+        if self.use_similarity:  # for cos similarity, the higher the similarity, the easier the sample
+            well_learned_mask = self.scores > self.scores.mean()
+        else:  # for ce loss, the lower the loss, the easier the sample
+            well_learned_mask = self.scores < self.scores.mean()
         well_learned_indices = np.where(well_learned_mask)[0]
         remained_indices = np.where(~well_learned_mask)[0].tolist()
         # print('#well learned samples %d, #remained samples %d, len(dataset) = %d' % (np.sum(well_learned_mask), np.sum(~well_learned_mask), len(self.dataset)))
@@ -219,7 +240,7 @@ class IBSampler(object):
         self.reset()
 
     def __getitem__(self, idx):
-        return self.sample_indices[idx]
+        return self.sample_indices[idx%len(self.sample_indices)]  # TODO: to force max_steps trained
 
     def reset(self):
         np.random.seed(self.iterations)
@@ -239,7 +260,8 @@ class IBSampler(object):
         return next(self.iter_obj) # may raise StopIteration
         
     def __len__(self):
-        return len(self.sample_indices)
+        #return len(self.sample_indices)
+        return len(self.dataset)  # TODO: to force max_steps trained
 
     def __iter__(self):
         #print(f"sampler __iter__ called")

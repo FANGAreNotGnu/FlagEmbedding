@@ -135,7 +135,7 @@ def finetune():
         tokenizer=tokenizer,
         max_steps=config.optimization.max_steps,
         soft_prune_ratio=0.5,
-        delta=0.875,
+        delta=1.,
     )
 
     trainer = InfoBatchBiTrainer(
